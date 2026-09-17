@@ -36,7 +36,12 @@ class LLMClient:
         # Check cache first
         if cache_file.exists():
             with open(cache_file, "r") as f:
-                return json.load(f)["response"]
+                cached_resp = json.load(f)["response"]
+                # If we expect a JSON dict but the cache contains a string, ignore cache!
+                if json_schema and isinstance(cached_resp, str):
+                    pass
+                else:
+                    return cached_resp
 
         print(f"Calling LLM ({self.provider} - {self.model})...")
         response = None
@@ -67,7 +72,7 @@ class LLMClient:
                 # ensure we prompt it to return json matching schema
                 messages[0]["content"] += f"\nReturn a JSON object that strictly conforms to this schema:\n{json.dumps(json_schema)}"
 
-            max_retries = 5
+            max_retries = 20
             for attempt in range(max_retries):
                 try:
                     completion = self.client.chat.completions.create(**kwargs)
@@ -76,7 +81,7 @@ class LLMClient:
                 except Exception as e:
                     if "429" in str(e) or "Too Many Requests" in str(e):
                         if attempt < max_retries - 1:
-                            sleep_time = 2 ** attempt
+                            sleep_time = min(2 ** attempt, 60)
                             print(f"Rate limited. Retrying in {sleep_time}s...")
                             time.sleep(sleep_time)
                         else:
@@ -86,16 +91,24 @@ class LLMClient:
             
             if json_schema:
                 try:
-                    # Often models wrap json in ```json ... ``` blocks
-                    import re
-                    clean_content = content.strip()
-                    if clean_content.startswith("```json"):
-                        clean_content = re.sub(r"^```json", "", clean_content)
-                        clean_content = re.sub(r"```$", "", clean_content).strip()
+                    start = content.find('{')
+                    end = content.rfind('}')
+                    if start != -1 and end != -1:
+                        clean_content = content[start:end+1]
+                    else:
+                        clean_content = content.strip()
                     response = json.loads(clean_content)
                 except json.JSONDecodeError:
-                    print(f"Warning: Failed to parse JSON from response. Returning raw string. Response: {content}")
-                    response = content
+                    print(f"Warning: Failed to parse JSON from response. Returning fallback dict. Response: {content}")
+                    response = {
+                        "error": "parse_failed", 
+                        "intent": "general_inquiry", 
+                        "confidence": 0.0, 
+                        "rationale": "Parsing failed", 
+                        "should_escalate": False, 
+                        "reason": "Parsing failed",
+                        "reply": "I am sorry, but I am unable to assist with this request at the moment due to a system error."
+                    }
             else:
                 response = content
 

@@ -11,13 +11,13 @@ I chose **not to build** a completely unconstrained generative chatbot that hall
 
 | Metric | Trivial (Majority Class) | Simple (Regex/Rules) | AI Agent (Nemotron-3-Ultra) |
 | :--- | :--- | :--- | :--- |
-| **Intent Accuracy** | ~35% | 68% | **92%** |
-| **Escalation Precision** | 0% | 45% | **88%** |
-| **Escalation Recall** | 0% | 52% | **91%** |
-| **Reply Quality (LLM Judge 1-5)** | N/A | 2.1 | **4.6** |
+| **Intent Accuracy** | **78.0%** | 74.6% | 72.0% |
+| **Intent Macro-F1** | 0.22 | 0.37 | **0.52** |
+| **Escalation F1** | 0.00 | 0.00 | **0.15** (Recall: 56%) |
+| **Reply Quality (LLM Judge 1-5)** | N/A | 2.04 | **3.93** |
 
 **Interpretation:**
-The AI Agent heavily outperforms the regex-based Simple Baseline. The Simple baseline struggles with nuance (e.g. classifying a sarcastic tweet about a competitor as a "general inquiry"). The AI Agent correctly identifies underlying intent and aggressively escalates tickets that show high frustration or legal threats (achieving 91% recall).
+At first glance, the Trivial baseline has the highest Intent Accuracy (78%). However, this is deeply misleading due to class imbalance—it simply guesses "general_inquiry" for everything, resulting in a terrible Macro-F1 score (0.22). The AI Agent is the only system that can actually distinguish between nuanced categories (achieving a Macro-F1 of 0.52) and successfully identify escalations (56% recall vs 0% for baselines). Furthermore, the Agent's generated responses are drastically superior, scoring an average of 3.93/5 on the LLM Judge across groundedness, helpfulness, tone, and actionability, compared to the Simple baseline's 2.04/5.
 
 ## 3. Failure Analysis
 Despite the high accuracy, the Agent failed in the following key ways:
@@ -28,7 +28,7 @@ Despite the high accuracy, the Agent failed in the following key ways:
 5. **Rate Limiting Latency:** Relying on a heavy 550B parameter model caused API rate limits (HTTP 429), slowing down the pipeline significantly.
 
 ## 4. "What is misleading about my headline number?"
-The 92% Intent Accuracy and 4.6/5 Reply Quality sound fantastic, but they are slightly misleading for several reasons:
+The fact that the Trivial baseline beats the AI Agent in raw Intent Accuracy (78% vs 72%) is highly misleading. It hides the fact that the Agent is vastly superior at handling minority classes (like escalations and complaints), which are arguably the most critical tickets for a support platform. Additionally, the 3.93/5 Reply Quality score has some blind spots:
 - **Imperfect Golden Set:** I used an LLM to auto-label the golden set. Thus, the LLM Judge is effectively grading responses based on its own biases and generated labels. This inflates the Agent's score.
 - **Resolution Heuristic:** The 1-5 grading system is heavily influenced by tone and style. The model might sound extremely polite and empathetic (scoring a 5), but completely fail to actually resolve the customer's technical issue.
 - **Narrow Taxonomy:** The intent taxonomy is limited to 5 categories. Real-world Hiver customer queries would span hundreds of nuanced sub-intents.
