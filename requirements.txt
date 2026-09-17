@@ -1,0 +1,13 @@
+pandas
+numpy
+scikit-learn
+sentence-transformers
+faiss-cpu
+kaggle
+python-dotenv
+openai
+anthropic
+pytest
+tqdm
+pydantic
+pyyaml

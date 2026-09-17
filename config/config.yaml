@@ -1,0 +1,13 @@
+brand_name: "sprintcare"
+data:
+  raw_path: "data/raw/twcs/twcs.csv"
+  processed_path: "data/processed/threads.csv"
+  golden_path: "data/golden/golden_set_labeled.csv"
+  max_working_rows: 40000
+model:
+  provider: "nvidia"
+  name: "nvidia/nemotron-3-ultra-550b-a55b"
+  temperature: 0.0
+escalation:
+  confidence_threshold: 0.7
+  similarity_threshold: 0.5

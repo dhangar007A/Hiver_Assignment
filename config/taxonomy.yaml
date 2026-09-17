@@ -1,0 +1,36 @@
+intents:
+  - name: "account_access"
+    definition: "Customer is unable to log in, recover password, or access their account."
+    examples:
+      - "I can't log into my account."
+      - "Reset password email is not arriving."
+      - "My account is locked."
+    not_included: "Issues related to billing or payment methods."
+  - name: "billing_issue"
+    definition: "Customer has a question or problem regarding a charge, bill, or payment method."
+    examples:
+      - "Why was I charged twice this month?"
+      - "My payment method won't update."
+      - "I need a refund for an accidental purchase."
+    not_included: "General pricing inquiries or account cancellations."
+  - name: "service_outage"
+    definition: "Customer is reporting that the service (e.g., internet, app) is down or not functioning."
+    examples:
+      - "My internet has been down for hours."
+      - "The app keeps crashing when I open it."
+      - "Are there outages in my area?"
+    not_included: "Device-specific hardware issues."
+  - name: "order_status"
+    definition: "Customer wants to know the status or location of their delivery/order."
+    examples:
+      - "Where is my package? It says delivered but it's not here."
+      - "Has my order shipped yet?"
+      - "Tracking link is broken."
+    not_included: "Returning an already received order."
+  - name: "general_inquiry"
+    definition: "Customer is asking a general question about products, services, or policies."
+    examples:
+      - "Do you offer military discounts?"
+      - "What are your store hours?"
+      - "How does the new feature work?"
+    not_included: "Specific technical troubleshooting or billing complaints."
